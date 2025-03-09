@@ -8,7 +8,6 @@
 #define MAX_SIZE 100
 
 // STACK BERBASIS ARRAY
-
 // Struktur stack menggunakan array
 typedef struct {
     char data[MAX_SIZE];
@@ -262,8 +261,7 @@ bool areParenthesesBalanced(char expression[]) {
     return isArrayStackEmpty(&s, false);
 }
 
-// PROBLEM 2: INFIX KE POSTFIX
-
+// PROBLEM 2: KONVERSI INFIX KE POSTFIX
 // Mendapatkan preseden dari operator
 int getPrecedence(char op) {
     switch (op) {
@@ -430,6 +428,21 @@ int evaluatePostfix(char postfix[]) {
     return resultArray; // Return the array implementation result for compatibility
 }
 
+// Fungsi untuk memeriksa apakah ekspresi postfix hanya berisi angka dan operator
+bool isValidPostfixForEvaluation(char postfix[]) {
+    for (int i = 0; postfix[i] != '\0'; i++) {
+        if (!isdigit(postfix[i]) && 
+            postfix[i] != '+' && 
+            postfix[i] != '-' && 
+            postfix[i] != '*' && 
+            postfix[i] != '/' && 
+            postfix[i] != '^') {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main() {
     int choice;
     char expression[MAX_SIZE];
@@ -439,10 +452,9 @@ int main() {
     do {
         printf("\n===== MENU OPERASI STACK =====\n");
         printf("1. Periksa Keseimbangan Tanda Kurung\n");
-        printf("2. Konversi Infix ke Postfix\n");
-        printf("3. Perhitungan Ekspresi Postfix\n");
-        printf("4. Keluar\n");
-        printf("Pilih menu (1-4): ");
+        printf("2. Konversi Infix ke Postfix dan Hitung Hasil\n");
+        printf("3. Keluar\n");
+        printf("Pilih menu (1-3): ");
         
         // Membaca input sebagai string terlebih dahulu
         if (fgets(input, MAX_SIZE, stdin) == NULL) {
@@ -484,8 +496,8 @@ int main() {
                 break;
                 
             case 2:
-                printf("\n===== KONVERSI INFIX KE POSTFIX =====\n");
-                printf("Masukkan ekspresi infix: ");
+                printf("\n===== KONVERSI INFIX KE POSTFIX DAN HITUNG HASIL =====\n");
+                printf("Masukkan ekspresi infix (contoh: 3+5*2): ");
                 fgets(expression, MAX_SIZE, stdin);
                 
                 // Hapus karakter newline jika ada
@@ -496,31 +508,26 @@ int main() {
                 
                 infixToPostfix(expression, postfix);
                 printf("Ekspresi postfix: %s\n", postfix);
+                
+                // Cek apakah ekspresi hanya mengandung angka dan operator
+                // untuk dapat dievaluasi
+                if (isValidPostfixForEvaluation(postfix)) {
+                    int result = evaluatePostfix(postfix);
+                    printf("Hasil dari perhitungan postfix: %d\n", result);
+                } else {
+                    printf("Ekspresi postfix mengandung variabel atau simbol yang tidak dapat dievaluasi.\n");
+                    printf("Hanya ekspresi dengan angka (0-9) dan operator yang dapat dihitung.\n");
+                }
                 break;
                 
             case 3:
-                printf("\n===== PERHITUNGAN EKSPRESI POSTFIX =====\n");
-                printf("Masukkan ekspresi postfix: ");
-                fgets(expression, MAX_SIZE, stdin);
-                
-                // Hapus karakter newline jika ada
-                len = strlen(expression);
-                if (len > 0 && expression[len-1] == '\n') {
-                    expression[len-1] = '\0';
-                }
-                
-                int result = evaluatePostfix(expression);
-                printf("Hasil dari ekspresi postfix: %d\n", result);
-                break;
-                
-            case 4:
                 printf("Keluar dari program...\n");
                 break;
                 
             default:
                 printf("Pilihan tidak valid! Silakan coba lagi.\n");
         }
-    } while (choice != 4);
+    } while (choice != 3);
     
     return 0;
 }
