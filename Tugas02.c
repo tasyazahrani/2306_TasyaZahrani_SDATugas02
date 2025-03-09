@@ -452,7 +452,7 @@ int main() {
     do {
         printf("\n===== MENU OPERASI STACK =====\n");
         printf("1. Periksa Keseimbangan Tanda Kurung\n");
-        printf("2. Konversi Infix ke Postfix dan Hitung Hasil\n");
+        printf("2. Konversi aritmatika Infix ke aritmatika Postfix & Hitung Hasil\n");
         printf("3. Keluar\n");
         printf("Pilih menu (1-3): ");
         
@@ -497,7 +497,7 @@ int main() {
                 
             case 2:
                 printf("\n===== KONVERSI INFIX KE POSTFIX DAN HITUNG HASIL =====\n");
-                printf("Masukkan ekspresi infix (contoh: 3+5*2): ");
+                printf("Masukkan ekspresi aritmatika infix (contoh: 3+5*2): ");
                 fgets(expression, MAX_SIZE, stdin);
                 
                 // Hapus karakter newline jika ada
@@ -507,7 +507,7 @@ int main() {
                 }
                 
                 infixToPostfix(expression, postfix);
-                printf("Ekspresi postfix: %s\n", postfix);
+                printf("Ekspresi aritmatika postfix: %s\n", postfix);
                 
                 // Cek apakah ekspresi hanya mengandung angka dan operator
                 // untuk dapat dievaluasi
