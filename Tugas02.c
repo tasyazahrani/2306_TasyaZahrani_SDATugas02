@@ -90,8 +90,7 @@ char peekCharArrayStack(CharArrayStack *s) {
     return s->data[s->top];
 }
 
-// STACK BERBASIS LINKED LIST 
-
+// STACK MENGGUNAKAN LINKED LIST 
 // Struktur node untuk implementasi linked list
 typedef struct StackNode {
     union {
@@ -107,14 +106,30 @@ typedef struct {
     bool isInt; // true jika stack menyimpan int, false jika menyimpan char
 } LinkedListStack;
 
-// Inisialisasi stack linked list
+// STACK MENGGUNAKAN LINKED LIST
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
+
+typedef struct {
+    Node *top;
+} IntLinkedListStack;
+
 void initLinkedListStack(LinkedListStack* s, bool isInt) {
     s->top = NULL;
     s->isInt = isInt;
 }
 
-// Memeriksa apakah stack linked list kosong
+void initIntLinkedListStack(IntLinkedListStack *s) {
+    s->top = NULL;
+}
+
 bool isLinkedListStackEmpty(LinkedListStack* s) {
+    return (s->top == NULL);
+}
+
+bool isIntLinkedListStackEmpty(IntLinkedListStack *s) {
     return (s->top == NULL);
 }
 
@@ -131,6 +146,17 @@ void pushToLinkedListStack(LinkedListStack* s, void* value) {
     else
         newNode->data.charData = *((char*)value);
     
+    newNode->next = s->top;
+    s->top = newNode;
+}
+
+void pushIntToLinkedListStack(IntLinkedListStack *s, int value) {
+    Node *newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("Heap penuh, tidak bisa push!\n");
+        exit(1);
+    }
+    newNode->data = value;
     newNode->next = s->top;
     s->top = newNode;
 }
@@ -153,6 +179,18 @@ void* popFromLinkedListStack(LinkedListStack* s, void* result) {
     free(temp);
     
     return result;
+}
+
+int popIntFromLinkedListStack(IntLinkedListStack *s) {
+    if (isIntLinkedListStackEmpty(s)) {
+        printf("Stack linked list kosong!\n");
+        exit(1);
+    }
+    Node *temp = s->top;
+    int popped = temp->data;
+    s->top = temp->next;
+    free(temp);
+    return popped;
 }
 
 // Melihat elemen teratas dari stack linked list
@@ -182,7 +220,7 @@ void freeLinkedListStack(LinkedListStack* s) {
     s->top = NULL;
 }
 
-// TUGAS 1: TANDA KURUNG SEIMBANG 
+// PROBLEM 1: TANDA KURUNG SEIMBANG 
 // Memeriksa apakah pasangan tanda kurung cocok
 bool isMatchingPair(char character1, char character2) {
     if (character1 == '(' && character2 == ')')
@@ -224,7 +262,7 @@ bool areParenthesesBalanced(char expression[]) {
     return isArrayStackEmpty(&s, false);
 }
 
-// TUGAS 2: INFIX KE POSTFIX
+// PROBLEM 2: INFIX KE POSTFIX
 
 // Mendapatkan preseden dari operator
 int getPrecedence(char op) {
@@ -315,80 +353,81 @@ void infixToPostfix(char infix[], char postfix[]) {
     freeLinkedListStack(&stack);
 }
 
-// TUGAS 3: EVALUASI POSTFIX
-
-// Fungsi untuk mengevaluasi ekspresi postfix
-int evaluatePostfix(char postfix[]) {
+// PROBLEM 3: PERHITUNGAN EKSPRESI POSTFIX
+int evaluatePostfixArray(char postfix[]) {
     IntArrayStack valueStack;
-    LinkedListStack operatorStack;
-    
     initIntArrayStack(&valueStack);
-    initLinkedListStack(&operatorStack, false);
     
     for (int i = 0; postfix[i] != '\0'; i++) {
         char c = postfix[i];
         
-        // Jika karakter adalah digit, masukkan nilainya ke stack
         if (isdigit(c)) {
-            pushIntToArrayStack(&valueStack, c - '0'); // Konversi char ke int
-        }
-        // Jika karakter adalah operand (huruf), kita akan menganggap nilainya 1 untuk kesederhanaan
-        else if (isalpha(c)) {
-            pushIntToArrayStack(&valueStack, 1); // Anggap nilai 1 untuk variabel
-        }
-        // Jika karakter adalah operator
+            pushIntToArrayStack(&valueStack, c - '0');
+        } 
         else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
-            // Simpan dulu operator dalam stack linked list (untuk demonstrasi)
-            pushToLinkedListStack(&operatorStack, &c);
-            char operator;
-            popFromLinkedListStack(&operatorStack, &operator);
-            
-            // Dapatkan dua operand
             int val2 = popIntFromArrayStack(&valueStack);
             int val1 = popIntFromArrayStack(&valueStack);
-            
-            switch (operator) {
-                case '+':
-                    pushIntToArrayStack(&valueStack, val1 + val2);
-                    break;
-                case '-':
-                    pushIntToArrayStack(&valueStack, val1 - val2);
-                    break;
-                case '*':
-                    pushIntToArrayStack(&valueStack, val1 * val2);
-                    break;
-                case '/':
+            switch (c) {
+                case '+': pushIntToArrayStack(&valueStack, val1 + val2); break;
+                case '-': pushIntToArrayStack(&valueStack, val1 - val2); break;
+                case '*': pushIntToArrayStack(&valueStack, val1 * val2); break;
+                case '/': 
                     if (val2 == 0) {
                         printf("Error: Pembagian dengan nol!\n");
                         exit(1);
                     }
                     pushIntToArrayStack(&valueStack, val1 / val2);
                     break;
-                case '^':
-                    pushIntToArrayStack(&valueStack, (int)pow(val1, val2));
-                    break;
+                case '^': pushIntToArrayStack(&valueStack, (int)pow(val1, val2)); break;
             }
         }
-        // Abaikan spasi dan karakter lainnya
-        else if (c != ' ') {
-            printf("Karakter tidak valid dalam ekspresi: %c\n", c);
-            exit(1);
+    }
+    
+    return popIntFromArrayStack(&valueStack);
+}
+
+int evaluatePostfixLinkedList(char postfix[]) {
+    IntLinkedListStack valueStack;
+    initIntLinkedListStack(&valueStack);
+    
+    for (int i = 0; postfix[i] != '\0'; i++) {
+        char c = postfix[i];
+        
+        if (isdigit(c)) {
+            pushIntToLinkedListStack(&valueStack, c - '0');
+        } 
+        else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
+            int val2 = popIntFromLinkedListStack(&valueStack);
+            int val1 = popIntFromLinkedListStack(&valueStack);
+            switch (c) {
+                case '+': pushIntToLinkedListStack(&valueStack, val1 + val2); break;
+                case '-': pushIntToLinkedListStack(&valueStack, val1 - val2); break;
+                case '*': pushIntToLinkedListStack(&valueStack, val1 * val2); break;
+                case '/': 
+                    if (val2 == 0) {
+                        printf("Error: Pembagian dengan nol!\n");
+                        exit(1);
+                    }
+                    pushIntToLinkedListStack(&valueStack, val1 / val2);
+                    break;
+                case '^': pushIntToLinkedListStack(&valueStack, (int)pow(val1, val2)); break;
+            }
         }
     }
     
-    // Hasil akhir seharusnya menjadi satu-satunya nilai yang tersisa di stack
-    int result = popIntFromArrayStack(&valueStack);
+    return popIntFromLinkedListStack(&valueStack);
+}
+
+// Function to use both array and linked list implementations
+int evaluatePostfix(char postfix[]) {
+    int resultArray = evaluatePostfixArray(postfix);
+    int resultLinkedList = evaluatePostfixLinkedList(postfix);
     
-    // Periksa apakah stack kosong (ekspresi valid)
-    if (!isArrayStackEmpty(&valueStack, true)) {
-        printf("Error: Ekspresi tidak valid (terlalu banyak operand)\n");
-        exit(1);
-    }
+    printf("\n=== HASIL PERHITUNGAN ===\n");
+    printf("Menggunakan Array Stack    : %d\n", resultArray);
+    printf("Menggunakan Linked List    : %d\n", resultLinkedList);
     
-    // Bebaskan stack linked list
-    freeLinkedListStack(&operatorStack);
-    
-    return result;
+    return resultArray; // Return the array implementation result for compatibility
 }
 
 int main() {
@@ -401,7 +440,7 @@ int main() {
         printf("\n===== MENU OPERASI STACK =====\n");
         printf("1. Periksa Keseimbangan Tanda Kurung\n");
         printf("2. Konversi Infix ke Postfix\n");
-        printf("3. Evaluasi Ekspresi Postfix\n");
+        printf("3. Perhitungan Ekspresi Postfix\n");
         printf("4. Keluar\n");
         printf("Pilih menu (1-4): ");
         
@@ -427,7 +466,7 @@ int main() {
         
         switch(choice) {
             case 1:
-                printf("\n--- PEMERIKSA KESEIMBANGAN TANDA KURUNG ---\n");
+                printf("\n===== PEMERIKSA KESEIMBANGAN TANDA KURUNG =====\n");
                 printf("Masukkan ekspresi dengan tanda kurung: ");
                 fgets(expression, MAX_SIZE, stdin);
                 
@@ -445,7 +484,7 @@ int main() {
                 break;
                 
             case 2:
-                printf("\n--- KONVERTER INFIX KE POSTFIX ---\n");
+                printf("\n===== KONVERSI INFIX KE POSTFIX =====\n");
                 printf("Masukkan ekspresi infix: ");
                 fgets(expression, MAX_SIZE, stdin);
                 
@@ -460,7 +499,7 @@ int main() {
                 break;
                 
             case 3:
-                printf("\n--- EVALUATOR EKSPRESI POSTFIX ---\n");
+                printf("\n===== PERHITUNGAN EKSPRESI POSTFIX =====\n");
                 printf("Masukkan ekspresi postfix: ");
                 fgets(expression, MAX_SIZE, stdin);
                 

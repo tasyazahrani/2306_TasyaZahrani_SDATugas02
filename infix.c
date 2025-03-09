@@ -7,7 +7,6 @@
 #define MAX_SIZE 100
 
 // STACK BERBASIS LINKED LIST 
-
 // Struktur node untuk implementasi linked list
 typedef struct StackNode {
     char data;
